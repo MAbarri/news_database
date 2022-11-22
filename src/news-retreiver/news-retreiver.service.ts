@@ -6,7 +6,7 @@ import { ArticleService } from "../api/article/article.service"
 export class NewsRetreiverService {
     constructor(private articleService: ArticleService){}
     
-    @Cron('1 0 * * * *')
+    @Cron('1 * * * * *')
     handleCron() {
         console.log('Called when the current second is 45');
         this.articleService.scrapNewsData("", "");
