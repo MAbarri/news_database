@@ -36,61 +36,70 @@ export class ArticleService {
     }
 
 
-    public scrapNewsData(lang, keyword) {
+    public scrapNewsData(country, category) {
+        return new Promise(resolve => {
 
-        
-        const options = {
-            method: 'GET',
-            url: 'https://newsapi.org/v2/top-headlines?country=sa&category=sports&pageSize=100',
-            headers: {
-                'X-Api-Key': 'dbe25773eee642da8aa0b07903b56c92'
-            }
-        };
+            const options = {
+                method: 'GET',
+                url: 'https://newsapi.org/v2/top-headlines?country=' + country + '&category=' + category + '&pageSize=100',
+                headers: {
+                    'X-Api-Key': 'dbe25773eee642da8aa0b07903b56c92'
+                }
+            };
 
-        axios.request(options).then(response => {
-            console.log("results : ",response.data.articles.length);
-            this.insertNewArticles(response.data.articles)
-        }).catch(function (error) {
-            console.error(error);
-        });
+            axios.request(options).then(async response => {
+                console.log("results : ", response.data.articles.length);
+                await this.insertNewArticles(response.data.articles, country, category)
+                resolve({});
+            }).catch(function (error) {
+                console.error(error);
+            });
+        })
     }
 
-    insertNewArticles(articlesArray){
+    insertNewArticles(articlesArray, country, category){
 
+        return new Promise(resolve => {
 
-        async.eachSeries(
-            articlesArray,
-            async _article => {
-                let existingArticle = await this.findArticle(_article.url);
-                console.log('Condition for this article : ', !existingArticle, !!_article.url, !!_article.urlToImage, !existingArticle && !!_article.url && !!_article.urlToImage)
-                if (!existingArticle && !!_article.url && !!_article.urlToImage) {
+            async.eachSeries(
+                articlesArray,
+                async _article => {
+                    let existingArticle = await this.findArticle(_article.url);
 
-                    let newArticle = new Article();
-                    newArticle.title = _article.title;
-                    newArticle.articleDate = _article.publishedAt;
-                    newArticle.author = _article.author || _article.source.name;
-                    newArticle.content = _article.description;
-                    newArticle.heroURL = _article.urlToImage;
-                    newArticle.source = _article.source.name;
-                    newArticle.sourceURL = _article.url;
-                    newArticle.lang = "en";
-                    newArticle.country = "sa";
-                    newArticle.category = "sports";
+                    console.log('Condition for this article : ', !existingArticle, !!_article.url, !!_article.urlToImage, !existingArticle && !!_article.url && !!_article.urlToImage)
+                    if (!existingArticle && !!_article.url && !!_article.urlToImage) {
 
-                    console.log('saving new Article');
-                    await this.repository.save(newArticle);
-                } 
-                // else {
-                //     console.log('_article.url', !!_article.url, _article.url)
+                        let newArticle = new Article();
+                        newArticle.title = _article.title;
+                        newArticle.articleDate = _article.publishedAt;
+                        newArticle.author = _article.author || _article.source.name;
+                        newArticle.content = _article.description;
+                        newArticle.heroURL = _article.urlToImage;
+                        newArticle.source = _article.source.name;
+                        newArticle.sourceURL = _article.url;
+                        newArticle.lang = "en";
+                        newArticle.country = country;
+                        newArticle.category = category;
 
-                // }
-                Promise.resolve() // <-- instead of callback
-            },
-            err => {
-                console.log('err:', err)
-            }
-        )
+                        console.log('saving new Article');
+                        await this.repository.save(newArticle);
+                    }
+                    // else {
+                    //     console.log('_article.url', !!_article.url, _article.url)
+
+                    // }
+                    Promise.resolve() // <-- instead of callback
+                },
+                err => {
+                    console.log('err:', err)
+                }
+            )
+
             console.log('FINISHED ?')
+
+            resolve({});
+        })
+
 
     }
 }
