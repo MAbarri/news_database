@@ -62,7 +62,9 @@ export class ArticleService {
             articlesArray,
             async _article => {
                 let existingArticle = await this.findArticle(_article.url);
+                console.log('Condition for this article : ', !existingArticle, !!_article.url, !!_article.urlToImage, !existingArticle && !!_article.url && !!_article.urlToImage)
                 if (!existingArticle && !!_article.url && !!_article.urlToImage) {
+
                     let newArticle = new Article();
                     newArticle.title = _article.title;
                     newArticle.articleDate = _article.publishedAt;
