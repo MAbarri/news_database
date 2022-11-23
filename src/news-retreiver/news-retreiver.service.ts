@@ -9,6 +9,7 @@ export class NewsRetreiverService {
     @Cron('1 0 * * * *')
     async handleCron() {
         console.log('Called when the current second is 1 at minute 0');
+        await this.articleService.scrapBingNewsData("sa", "general")
         await this.articleService.scrapNewsData("sa", "general")
         await this.articleService.scrapNewsData("sa", "business")
         await this.articleService.scrapNewsData("sa", "sports")

@@ -57,6 +57,76 @@ export class ArticleService {
         })
     }
 
+    public scrapBingNewsData(country, category?) {
+        return new Promise(resolve => {
+            const options = {
+                method: 'GET',
+                url: 'https://bing-news-search1.p.rapidapi.com/news',
+                params: { cc: 'sa', mkt: 'en-ZA', safeSearch: 'Off', textFormat: 'Raw' },
+                headers: {
+                    'X-BingApis-SDK': 'true',
+                    'X-RapidAPI-Key': '465600b960mshda2f26fd11519b9p1784cfjsn595f386cac42',
+                    'X-RapidAPI-Host': 'bing-news-search1.p.rapidapi.com'
+                }
+            };
+
+
+            axios.request(options).then(async response => {
+                console.log("results : ", response.data.value.length);
+                await this.insertBingNewsArticles(response.data.value, country, category ? category : 'general')
+                resolve({});
+            }).catch(function (error) {
+                console.error(error);
+            });
+        })
+    }
+
+    insertBingNewsArticles(articlesArray, country, category){
+
+        return new Promise(resolve => {
+
+            async.eachSeries(
+                articlesArray,
+                async _article => {
+                    let existingArticle = await this.findArticle(_article.url);
+
+                    // console.log('Condition for this article : Exists ? ', !existingArticle, ", Has URL ? ", !!_article.url, " Has Media URL ?  ", !!_article.urlToImage, " Condition result :   ", !existingArticle && !!_article.url && !!_article.urlToImage)
+                    if (!existingArticle && !!_article.url && !!_article.image?.thumbnail?.contentUrl) {
+
+                        let newArticle = new Article();
+                        newArticle.title = _article.name;
+                        newArticle.articleDate = _article.datePublished;
+                        newArticle.author = _article.provider[0].name;
+                        newArticle.content = _article.description;
+                        newArticle.heroURL = _article.image.thumbnail.contentUrl;
+                        newArticle.source = _article.provider[0].name;
+                        newArticle.sourceURL = _article.url;
+                        newArticle.lang = "en";
+                        newArticle.country = country;
+                        newArticle.category = category;
+
+                        console.log('saving new Article');
+                        await this.repository.save(newArticle);
+                    }
+                    // else {
+                    //     console.log('_article.url', !!_article.url, _article.url)
+
+                    // }
+                    Promise.resolve() // <-- instead of callback
+                },
+                err => {
+                    console.log('err:', err)
+                }
+            )
+
+            console.log('FINISHED ?')
+
+            resolve({});
+        })
+
+
+    }
+
     insertNewArticles(articlesArray, country, category){
 
         return new Promise(resolve => {
