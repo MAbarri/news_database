@@ -66,7 +66,7 @@ export class ArticleService {
                 async _article => {
                     let existingArticle = await this.findArticle(_article.url);
 
-                    console.log('Condition for this article : ', !existingArticle, !!_article.url, !!_article.urlToImage, !existingArticle && !!_article.url && !!_article.urlToImage)
+                    // console.log('Condition for this article : Exists ? ', !existingArticle, ", Has URL ? ", !!_article.url, " Has Media URL ?  ", !!_article.urlToImage, " Condition result :   ", !existingArticle && !!_article.url && !!_article.urlToImage)
                     if (!existingArticle && !!_article.url && !!_article.urlToImage) {
 
                         let newArticle = new Article();

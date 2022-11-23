@@ -22,7 +22,7 @@ export class Article {
     @Column()
     public heroURL: string;
 
-    @Column()
+    @Column({nullable: true})
     public content: string;
 
     @Column({nullable: true})
